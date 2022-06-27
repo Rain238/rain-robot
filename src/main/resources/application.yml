@@ -19,7 +19,7 @@ simbot:
       #默认2分钟(毫秒)
       defaultTimeout: 120000
     # 账号:密码，多个用逗号(,)分隔或者用yaml的多项配置
-    bots: 656350873:rainrain123
+    bots: 123456789:xxxxx
   component:
     mirai:
       # mirai心跳周期. 过长会导致被服务器断开连接. 单位毫秒 默认30000。
@@ -64,6 +64,8 @@ simbot:
 # 最高权限QQ 配置为自己的即可
 master:
   qq: 3164395730
-# 重启脚本路径
+# 重启脚本路径 使用VisualBat将cmd命令打包成exe文件执行
+# cd /d D:\IDEA\QQRobot-SpringBot\target  自行修改路径
+# java -jar chestnut-dream-1.0.3.jar      看pom里面的版本号
 restart:
   script: D:\\桌面\\VisualBat\\Project.exe
