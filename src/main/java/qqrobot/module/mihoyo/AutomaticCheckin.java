@@ -48,7 +48,7 @@ public class AutomaticCheckin extends AbstractMessage {
      *
      * @throws Exception 异常
      */
-    @Scheduled(cron = "0 3 8 * * ?")
+    @Scheduled(cron = "0 0 7 * * ?")
     private synchronized void miHoYoSign() throws Exception {
         //防止重复签到校验码
         String checkCode = "2l4M3M7IGFjY291bnRfaWQ9MTY5";
@@ -73,7 +73,7 @@ public class AutomaticCheckin extends AbstractMessage {
     /**
      * 原神自动签到
      */
-    @Scheduled(cron = "0 3 8 * * ?")
+    @Scheduled(cron = "0 0 7 * * ?")
     private synchronized void gsSign() {
         //防止重复签到校验码
         String checkCode = "N2YyOWFmYjE0ODdlZi0wYTJkZTc2";
