@@ -6,8 +6,9 @@ import qqrobot.util.LogoFileUtils;
 public class LoadMicroMark {
     @SneakyThrows
     public void logo() {
-        System.out.print(new LogoFileUtils().loadLogo());
+        final LogoFileUtils logo = new LogoFileUtils();
+        System.out.print(logo.loadLogo());
         System.out.println("v1.0.5");
-        System.out.println(LogoFileUtils.tips());
+        System.out.println(logo.tips());
     }
 }
