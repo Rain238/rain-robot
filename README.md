@@ -1,22 +1,34 @@
-# Chestnut-Dream(栗子梦Bot)
+# Chestnut-Dream(栗梦Bot)
 
-- QQ机器人
-- [本梦的使用手册](https://www.yuque.com/docs/share/b3b3c9c8-843f-457c-b1e7-eb89cfbb407e)
+基于[Simple-Robot](https://github.com/ForteScarlet/simpler-robot/tree/v2-dev)机器人项目
+
+- [栗梦手册](https://www.yuque.com/docs/share/b3b3c9c8-843f-457c-b1e7-eb89cfbb407e)
 - [点击入群](https://jq.qq.com/?_wv=1027&k=y1JjrjyL)
 
-# 关于框架
+# 环境准备
 
-- SpringBot
-- SimpleRobot
+1. 熟悉`SpringBoot`框架
+2. 环境需求`Java11` `MySql`
 
-# 关于数据库
+# 使用教程
 
-- 数据库使用Mysql
-- 已上传数据库结构
+1. 克隆本项目到本地`git clone https://github.com/Rain238/rain-robot.git`
+2. 打开`\src\main\resources\`文件夹里面有个`application.yml`配置文件
+3. `\sql`文件夹下有本项目数据库结构文件
+   | 配置名 | 描述 |
+   | ---- | ---- |
+   | port | 项目端口 |
+   | url | 数据库地址 |   
+   | username | 数据库用户名 |   
+   | password | 数据库密码 |   
+   | bots | 机器人账号,`账号:密码`多个用`,`隔开 |   
+   | protocol | 登陆协议建议使用`IPAD`协议 |
 
 # 关于其他配置
 
-- 配置文件在resources下的application.yml中有写
+- 配置文件`\src\main\resources\`下的`application.yml`中有写
+
+# 更新记录
 
 ### 2022/6/26 \[v1.0.5]
 
