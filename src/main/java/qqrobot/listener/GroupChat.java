@@ -19,7 +19,6 @@ import qqrobot.listener.mapper.MihoyoMapping;
 import qqrobot.listener.mapper.ReviseBotMapping;
 import qqrobot.simple.Send;
 
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -83,11 +82,6 @@ public class GroupChat {
      */
     @Value("${master.qq}")
     private String Master;
-    /**
-     * 重启脚本文件路径，可在配置文件中设置
-     */
-    @Value("${restart.script}")
-    private String restartScript;
 
     public GroupChat(MessageContentBuilderFactory mCBF, BotManager manager, ReviseBotMapping reviseBot, MihoyoMapping mihoyo, GsMapping gs, Send send, BotRegistrar re) {
         this.mCBF = mCBF;
@@ -223,55 +217,5 @@ public class GroupChat {
             }
             map.put(msg.getId(), msg.getId());
         }
-    }
-
-    /**
-     * 鸡你太美
-     */
-    @OnGroup
-    @OnPrivate
-    @Filter(value = "鸡你太美", matchType = MatchType.EQUALS, trim = true)
-    public synchronized void chickenYouAreSoBeautiful(GroupMsg msg) {
-        send.groups(msg, Master, "游戏地址\nhttps://fangkuai767.github.io/EatKun/");
-    }
-
-    /**
-     * 重启程序指令
-     *
-     * @throws Exception 非法结束异常
-     */
-    @OnGroup
-    @OnPrivate
-    @Filter(value = ".重启", matchType = MatchType.EQUALS, trim = true)
-    public synchronized void manuals(MsgGet msg) throws Exception {
-        String str = "才不会帮你重启系统呢！哼！";
-        if (msg instanceof GroupMsg) {
-            //获取当前消息发送者的权限信息
-            String permissions = String.valueOf(((GroupMsg) msg).getPermission());
-            //判断当前消息发送者的权限消息是否不为普通成员 OWNER=群主 ADMINISTRATOR=管理员 MEMBER=普通成员
-            if (!permissions.equals("MEMBER")) {
-                send.groups((GroupMsg) msg, str);
-                restart();
-            }
-        } else if (msg instanceof PrivateMsg) {
-            //获取当前QQ
-            final String qqCode = msg.getAccountInfo().getAccountCode();
-            if (qqCode.equals(Master)) {
-                send.privates(qqCode, str);
-                restart();
-            }
-        }
-    }
-
-    /**
-     * 封装重启
-     *
-     * @throws IOException 非法结束异常
-     */
-    private void restart() throws IOException {
-        //开启一个新进程
-        Runtime.getRuntime().exec(String.format("CMD /C %s", restartScript));
-        //退出当前进程
-        System.exit(0);
     }
 }
