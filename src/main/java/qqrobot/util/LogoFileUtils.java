@@ -14,6 +14,7 @@ public class LogoFileUtils {
         SecureRandom random = new SecureRandom();
         final int number = random.nextInt(11) + 1;
         InputStream is = this.getClass().getResourceAsStream(String.format("/logo/logo%s.txt", number));
+        System.out.println();
         //返回读取指定资源的输入流
         assert is != null;
         BufferedReader br = new BufferedReader(new InputStreamReader(is));
