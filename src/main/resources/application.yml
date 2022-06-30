@@ -63,9 +63,11 @@ simbot:
         keep-alive-time: 1000
 # 最高权限QQ 配置为自己的即可
 master:
-  qq: 3164395730
-# 重启脚本路径 使用VisualBat将cmd命令打包成exe文件执行
-# cd /d D:\IDEA\QQRobot-SpringBot\target  自行修改路径
-# java -jar chestnut-dream-1.0.3.jar      看pom里面的版本号
+  qq: 123456789
+# 重启脚本路径
+# 桌面新建文本文件，填写完将后缀改为.bat即可
+# 例：项目jar包路径和版本号自行修改
+# cd /d D:\IDEA\temporary\rain-robot\target
+# java -jar chestnut-dream-1.0.5.jar
 restart:
-  script: D:\\桌面\\VisualBat\\Project.exe
+  script: C:\\桌面\\bot.bat
