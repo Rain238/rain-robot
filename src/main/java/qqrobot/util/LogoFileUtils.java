@@ -1,4 +1,5 @@
 package qqrobot.util;
+
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 
@@ -11,7 +12,7 @@ import java.security.SecureRandom;
 public class LogoFileUtils {
     public String loadLogo() throws IOException {
         SecureRandom random = new SecureRandom();
-        final int number = random.nextInt(18) + 1;
+        final int number = random.nextInt(11) + 1;
         InputStream is = this.getClass().getResourceAsStream(String.format("/logo/logo%s.txt", number));
         //返回读取指定资源的输入流
         assert is != null;
