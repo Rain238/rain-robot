@@ -185,11 +185,7 @@ public class GroupChat {
     }
 
 
-    @OnGroup
-    @Filter(value = ".h1", matchType = MatchType.EQUALS, trim = true)
-    public void manual(GroupMsg msg) {
-        send.groups(msg, Master, "本梦的使用手册\nhttps://www.yuque.com/docs/share/b3b3c9c8-843f-457c-b1e7-eb89cfbb407e");
-    }
+
 
     /**
      * 此方法用于检测所有Bot在线状态，首先要确保application.yml中登录的Bot账号全部在同一个群里面否则功能将会会出现异常
