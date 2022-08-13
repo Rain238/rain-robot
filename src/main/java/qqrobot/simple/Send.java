@@ -14,7 +14,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
+ * 封装simple发送消息
+ * &#064;Author  RainRain
+ * &#064;Data  2022/7/5 16:40
  */
 @Slf4j
 @Component
@@ -54,7 +56,7 @@ public class Send {
      */
     public void privates(String qqCode, String botQQ, String str) {
         meh.sendPrivates(botQQ, qqCode, str);
-        log.info("QQ:{} Msg:{}", qqCode, str);
+        log.info("RecipientQQ: {} - <== Msg: {}", qqCode, str.replace("\n", " "));
     }
 
     /**
@@ -69,7 +71,7 @@ public class Send {
         //根据当前QQ查找绑定的BotQQ账号
         String botQQ = reviseBot.QueryBotQQAccordingToQQ(qqCode);
         meh.sendPrivates(botQQ, qqCode, str);
-        log.info("QQ:{} Msg:{}", qqCode, str);
+        log.info("RecipientQQ: {} - <== Msg: {}", qqCode, str.getMsg().replace("\n", " "));
     }
 
     /**
@@ -85,7 +87,7 @@ public class Send {
         String botQQ = reviseBot.QueryBotQQAccordingToQQ(qqCode);
         meh.sendPrivates(botQQ, qqCode, str);
         //将该事件id添加到map内
-        log.info("EventID:{} QQ:{} Msg:{}", msg.getId(), qqCode, str);
+        log.info("EventID: {} RecipientQQ: {} - <== Msg: {}", msg.getId(), qqCode, str.replace("\n", " "));
     }
 
     /**
@@ -98,7 +100,7 @@ public class Send {
         //根据当前QQ账号查询出该账号绑定的Bot账号
         String botQQ = reviseBot.QueryBotQQAccordingToQQ(qqCode);
         meh.sendPrivates(botQQ, qqCode, str);
-        log.info("QQ:{} Msg:{}", qqCode, str);
+        log.info("RecipientQQ: {} - <== Msg: {}", qqCode, str.replace("\n", " "));
     }
 
     //------------------------------------------------------------------------------------------------------------------
@@ -116,9 +118,9 @@ public class Send {
     public synchronized void groups(String eventId, String grCode, String qqCode, String str) {
         //根据QQ查找绑定的Bot账号
         String botQQ = reviseBot.QueryBotQQAccordingToQQ(qqCode);
-        meh.sendGroups(botQQ, grCode, str);
+        meh.sendGroups(botQQ, grCode, str, qqCode);
         //将当前事件ID添加到map集合内防止发送重复消息
-        log.info("EventID:{} Gr:{} Msg:{}", eventId, grCode, str);
+        log.info("EventID: {} TriggerQQ: {} ← RecipientGr: {} - <== Msg: {}", eventId, qqCode, grCode, str.replace("\n", " "));
     }
 
     /**
@@ -132,9 +134,9 @@ public class Send {
         if (!map.containsKey(msg.getId())) {
             String grCode = get.grCode(msg);
             String botQQ = reviseBot.QueryBotQQAccordingToQQ(qqCode);
-            meh.sendGroups(botQQ, grCode, str);
+            meh.sendGroups(botQQ, grCode, str, qqCode);
             map.put(msg.getId(), msg.getId());
-            log.info("EventID:{} Gr:{} Msg:{}", msg.getId(), grCode, str);
+            log.info("EventID: {} TriggerQQ: {} ← RecipientGr: {} - <== Msg: {}", msg.getId(), qqCode, grCode, str.replace("\n", " "));
         }
     }
 
@@ -154,10 +156,10 @@ public class Send {
             String qqCode = get.prCode(msg);
             //根据当前QQ账号查询出该账号绑定的Bot账号
             String botQQ = reviseBot.QueryBotQQAccordingToQQ(qqCode);
-            meh.sendGroups(botQQ, grCode, str);
+            meh.sendGroups(botQQ, grCode, str, qqCode);
             //将该事件id添加到map内
             map.put(msg.getId(), msg.getId());
-            log.info("EventID:{} Gr:{} Msg:{}", msg.getId(), grCode, str);
+            log.info("EventID: {} TriggerQQ: {} ← RecipientGr: {} - <== Msg: {}", msg.getId(), qqCode, grCode, str.replace("\n", " "));
         }
     }
 
@@ -177,10 +179,10 @@ public class Send {
             String qqCode = get.prCode(msg);
             //根据当前QQ账号查询出该账号绑定的Bot账号
             String botQQ = reviseBot.QueryBotQQAccordingToQQ(qqCode);
-            meh.sendGroups(botQQ, grCode, str);
+            meh.sendGroups(botQQ, grCode, str, qqCode);
             //将该事件id添加到map内
             map.put(msg.getId(), msg.getId());
-            log.info("EventID:{} Gr:{} Msg:{}", msg.getId(), grCode, str);
+            log.info("EventID: {} TriggerQQ: {} ← RecipientGr: {} - <== Msg: {}", msg.getId(), qqCode, grCode, str.getMsg().replace("\n", " "));
         }
     }
 
@@ -206,10 +208,10 @@ public class Send {
             String qqCode = get.prCode(msg);
             //根据当前QQ账号查询出该账号绑定的Bot账号
             String botQQ = reviseBot.QueryBotQQAccordingToQQ(qqCode);
-            meh.sendGroupsAsync(botQQ, qqCode, str);
+            meh.sendGroupsAsync(botQQ, qqCode, str, qqCode);
             //将该事件id添加到map内
             map.put(msg.getId(), msg.getId());
-            log.info("EventID:{} Gr:{} Msg:{}", msg.getId(), grCode, str.getMsg());
+            log.info("EventID: {} TriggerQQ: {} ← RecipientGr: {} - <== Msg: {}", msg.getId(), qqCode, grCode, str.getMsg().replace("\n", " "));
         }
     }
 
@@ -234,7 +236,7 @@ public class Send {
         meh.sendPrivatesAsync(botQQ, qqCode, str);
         //将该事件id添加到map内
         map.put(msg.getId(), msg.getId());
-        log.info("EventID:{} QQ:{} Msg:{}", msg.getId(), qqCode, str.getMsg());
+        log.info("EventID: {} RecipientQQ: {} - <== Msg: {}", msg.getId(), qqCode, str.getMsg().replace("\n", " "));
     }
 
     //------------------------------------------------------------------------------------------------------------------
@@ -263,7 +265,7 @@ class MessageExceptionHandling {
             //根据指定的bot发送私聊消息
             bot.getSender().SENDER.sendPrivateMsg(qqCode, str);
         } catch (Exception e) {
-            log.error("{}", "指定Bot账号不存在！");
+            log.warn("MasterQQ: {} Remind: {}", qqCode, "指定Bot账号不存在！");
         }
     }
 
@@ -274,30 +276,29 @@ class MessageExceptionHandling {
             //根据指定的bot发送私聊消息
             bot.getSender().SENDER.sendPrivateMsg(qqCode, str);
         } catch (Exception e) {
-            log.error("{}", "指定Bot账号不存在！");
+            log.warn("MasterQQ: {} Remind: {}", qqCode, "指定Bot账号不存在！");
         }
     }
 
-    public void sendGroups(String botQQ, String grCode, String str) {
+    public void sendGroups(String botQQ, String grCode, String str, String qqCode) {
         try {
             //指定一个bot来发送消息
             Bot bot = manager.getBot(botQQ);
             //根据指定的bot发送群聊消息
             bot.getSender().SENDER.sendGroupMsg(grCode, str);
         } catch (Exception e) {
-            log.error("{}", "指定Bot账号不存在！");
-            e.printStackTrace();
+            log.warn("Groups: {} MasterQQ: {} Remind: {}", grCode, qqCode, "指定Bot账号不存在！");
         }
     }
 
-    public void sendGroupsAsync(String botQQ, String grCode, MiraiMessageContent str) {
+    public void sendGroupsAsync(String botQQ, String grCode, MiraiMessageContent str, String qqCode) {
         try {
             //指定一个bot来发送消息
             Bot bot = manager.getBot(botQQ);
             //根据指定的bot发送群组异步消息
             bot.getSender().SENDER.sendGroupMsgAsync(grCode, str);
         } catch (Exception e) {
-            log.error("{}", "指定Bot账号不存在！");
+            log.warn("Groups: {} MasterQQ: {} Remind: {}", grCode, qqCode, "指定Bot账号不存在！");
         }
     }
 
@@ -308,18 +309,18 @@ class MessageExceptionHandling {
             //根据指定的bot发送私聊异步消息
             bot.getSender().SENDER.sendPrivateMsgAsync(qqCode, str);
         } catch (Exception e) {
-            log.error("{}", "指定Bot账号不存在！");
+            log.warn("MasterQQ: {} Remind: {}", qqCode, "指定Bot账号不存在！");
         }
     }
 
-    public void sendGroups(String botQQ, String grCode, MessageContent str) {
+    public void sendGroups(String botQQ, String grCode, MessageContent str, String qqCode) {
         try {
             //指定一个bot来发送消息
             Bot bot = manager.getBot(botQQ);
             //根据指定的bot发送群聊消息
             bot.getSender().SENDER.sendGroupMsg(grCode, str);
         } catch (Exception e) {
-            log.error("{}", "指定Bot账号不存在！");
+            log.warn("Groups: {} MasterQQ: {} Remind: {}", grCode, qqCode, "指定Bot账号不存在！");
         }
     }
     //------------------------------------------------------------------------------------------------------------------
