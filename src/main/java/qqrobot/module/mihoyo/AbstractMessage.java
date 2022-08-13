@@ -24,14 +24,18 @@ public abstract class AbstractMessage {
      * @param code    结果状态
      */
     public void gsSignMessage(String qq, String name, String uid, String hubSign, String code) {
-        if (code.contains("OK")) {
-            send.privates(qq, String.format("名称: %s\n签到成功\n%s", name, hubSign));
-        } else if (code.contains("旅行者")) {
-            send.privates(qq, String.format("名称: %s\n今日你已签到了哦", name));
-        } else if (code.contains("尚未登录")) {
-            send.privates(qq, String.format("UID:%s\n原神Cookie已失效请重新绑定", uid));
-            //将失效的Cookie账号数据清除方便重新绑定
-            gsSignMessage.deleteByUid(uid);
+        switch (code) {
+            case "OK":
+                send.privates(qq, String.format("名称: %s\n签到成功\n%s", name, hubSign));
+                break;
+            case "旅行者,你已经签到过了":
+                send.privates(qq, String.format("名称: %s\n%s", name, code));
+                break;
+            case "尚未登录":
+                send.privates(qq, String.format("UID:%s\n原神Cookie已失效请重新绑定", uid));
+                //将失效的Cookie账号数据清除方便重新绑定
+                gsSignMessage.deleteByUid(uid);
+                break;
         }
     }
 
@@ -44,19 +48,24 @@ public abstract class AbstractMessage {
      * @return String
      * @throws Exception 线程可能抛出异常
      */
-    public String sign(String cookie, String stuid, String stoken) throws Exception {
+    public String sign(String cookie, String stuid, String stoken, String type, String version, String salt) throws Exception {
         //创建线程
         ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
-        String bhs = (String) new MiHoYoSignMiHoYo(cookie, MiHoYoConfig.HubsEnum.BH3.getGame(), stuid, stoken, executor).doSign();
+        String bhs = (String) new MiHoYoSignMiHoYo(cookie, MiHoYoConfig.HubsEnum.BH3.getGame(), stuid, stoken, executor, type, version, salt).doSign();
         if (!bhs.contains("米游社Cookie失效")) {
-            new MiHoYoSignMiHoYo(cookie, MiHoYoConfig.HubsEnum.BH2.getGame(), stuid, stoken, executor).doSign();
-            new MiHoYoSignMiHoYo(cookie, MiHoYoConfig.HubsEnum.DBY.getGame(), stuid, stoken, executor).doSign();
-            new MiHoYoSignMiHoYo(cookie, MiHoYoConfig.HubsEnum.YS.getGame(), stuid, stoken, executor).doSign();
-            new MiHoYoSignMiHoYo(cookie, MiHoYoConfig.HubsEnum.WD.getGame(), stuid, stoken, executor).doSign();
+            new MiHoYoSignMiHoYo(cookie, MiHoYoConfig.HubsEnum.YS.getGame(), stuid, stoken, executor, type, version, salt).doSign();
+            new MiHoYoSignMiHoYo(cookie, MiHoYoConfig.HubsEnum.BH2.getGame(), stuid, stoken, executor, type, version, salt).sign();
+            new MiHoYoSignMiHoYo(cookie, MiHoYoConfig.HubsEnum.DBY.getGame(), stuid, stoken, executor, type, version, salt).sign();
+            new MiHoYoSignMiHoYo(cookie, MiHoYoConfig.HubsEnum.WD.getGame(), stuid, stoken, executor, type, version, salt).sign();
         } else {
             //将失效的Cookie账号数据进行删除方便重新绑定
             signInMapping.deleteByUid(stuid);
         }
         return bhs;
+    }
+
+    public String CheckinStatus(String cookie, String stuid, String stoken, String type, String version, String salt) {
+        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+        return (String) new MiHoYoSignMiHoYo(cookie, MiHoYoConfig.HubsEnum.BH3.getGame(), stuid, stoken, executor, type, version, salt).sign();
     }
 }
