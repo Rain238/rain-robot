@@ -7,14 +7,13 @@ import love.forte.simbot.annotation.OnPrivate;
 import love.forte.simbot.api.message.MessageContentBuilder;
 import love.forte.simbot.api.message.MessageContentBuilderFactory;
 import love.forte.simbot.api.message.events.PrivateMsg;
-import love.forte.simbot.api.sender.Sender;
 import love.forte.simbot.filter.MatchType;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import qqrobot.module.mihoyo.AbstractMessage;
 import qqrobot.module.mihoyo.genshin.mapper.GsSignInMapping;
 import qqrobot.module.mihoyo.sign.bean.MiHoYo;
 import qqrobot.module.mihoyo.sign.mapper.SignInMapping;
-import qqrobot.simple.Get;
 import qqrobot.util.Base64Util;
 import qqrobot.util.GetstokenUtils;
 import qqrobot.simple.Send;
@@ -25,7 +24,7 @@ import java.util.Objects;
 
 /**
  * 监听米游社社区签到
- *
+ * <p>
  * &#064;Author  Light rain
  * &#064;Date  2022/5/26 7:58
  */
@@ -35,28 +34,30 @@ public class SignIn extends AbstractMessage {
     private final MessageContentBuilderFactory messageContentBuilderFactory;//获取消息内容生成器工厂
     private final SignInMapping mapping;//米游社数据表
     private final Send send;//发送消息
-    private final Get get;//获取数据
+    @Value("${simbot.mihoyo.club.miyou-club-type}")
+    private String mysType;
+    @Value("${simbot.mihoyo.club.miyou-club-version}")
+    private String mysVersion;
+    @Value("${simbot.mihoyo.club.miyou-club-salt}")
+    private String mysSalt;
 
-
-    public SignIn(GsSignInMapping gsSignMessage, SignInMapping signInMapping, Send send, MessageContentBuilderFactory messageContentBuilderFactory, SignInMapping mapping, Send send1, Get get) {
+    public SignIn(GsSignInMapping gsSignMessage, SignInMapping signInMapping, Send send, MessageContentBuilderFactory messageContentBuilderFactory, SignInMapping mapping, Send send1) {
         super(gsSignMessage, signInMapping, send);
         this.messageContentBuilderFactory = messageContentBuilderFactory;
         this.mapping = mapping;
         this.send = send1;
-        this.get = get;
     }
-
 
     /**
      * 监听私/群聊米游社签到
      *
-     * @param privateMsg 私聊消息
-     * @param sender     发送消息
+     * @param msg 私聊消息
      */
     @OnPrivate
     @Filter(value = "米游社签到", matchType = MatchType.EQUALS, trim = true)
-    public void signIn(PrivateMsg privateMsg, Sender sender) throws Exception {
-        String qqCode = get.prCode(privateMsg);
+    public void signIn(PrivateMsg msg) throws Exception {
+        log.info("TriggerQQ: {} TriggerWord: {}", msg.getAccountInfo().getAccountCode(), msg.getText());
+        String qqCode = msg.getAccountInfo().getAccountCode();
         MessageContentBuilder message = messageContentBuilderFactory.getMessageContentBuilder();
         //根据当前QQ查询是否已绑定米游社
         if (mapping.queryUidByQQ(qqCode) == 1) {
@@ -68,23 +69,23 @@ public class SignIn extends AbstractMessage {
             //解密token
             String token = new String(Base64Util.base64decode(miHoYo.getToken()));
             //执行签到并返回数据
-            String sign = this.sign(cookie, miHoYo.getUid(), token);
+            String sign = this.sign(cookie, miHoYo.getUid(), token, mysType, mysVersion, mysSalt);
             send.privates(qqCode, sign);
         } else {
-            send.privates(qqCode, "请先绑定米游社");
+            send.privates(qqCode, "请发送\"绑定米游社\"进行账号绑定");
         }
     }
 
     /**
      * 监听私聊绑定米游社
      *
-     * @param privateMsg 私聊消息
-     * @param sender     发送消息
+     * @param msg 私聊消息
      */
     @OnPrivate
     @Filter(value = "绑定米游社", matchType = MatchType.EQUALS, trim = true)
-    public void privateMsgBindMiyouClub(PrivateMsg privateMsg, Sender sender) {
-        String qqCode = get.prCode(privateMsg);
+    public void privateMsgBindMiyouClub(PrivateMsg msg) {
+        log.info("TriggerQQ: {} TriggerWord: {}", msg.getAccountInfo().getAccountCode(), msg.getText());
+        String qqCode = msg.getAccountInfo().getAccountCode();
         //根据该QQ查询是否已绑定米游社
         if (mapping.queryUidByQQ(qqCode) != 1) {
             send.privates(qqCode, "格式为：\n通行证ID=你的通行证ID\n米游社Cookie=你的cookie,请注意字母大小写");
@@ -99,14 +100,14 @@ public class SignIn extends AbstractMessage {
     /**
      * 监听私聊绑定米游社格式
      *
-     * @param privateMsg 私聊消息
-     * @param sender     发送消息
+     * @param msg 私聊消息
      */
     @OnPrivate
     @Filters(value = {@Filter(value = "通行证ID=", matchType = MatchType.CONTAINS, trim = true), @Filter(value = "米游社Cookie=", matchType = MatchType.CONTAINS, trim = true)})
-    public void s(PrivateMsg privateMsg, Sender sender) {
-        String qqCode = get.prCode(privateMsg);
-        String msgText = get.text(privateMsg);
+    public void s(PrivateMsg msg) {
+        log.info("TriggerQQ: {} TriggerWord: {}", msg.getAccountInfo().getAccountCode(), msg.getText());
+        String qqCode = msg.getAccountInfo().getAccountCode();
+        String msgText = msg.getText();
         try {
             //通行证id                                                                     去除换行符
             String uid = msgText.split("通行证ID=")[1].split("米游社Cookie=")[0].replace("\n", "");
@@ -132,6 +133,7 @@ public class SignIn extends AbstractMessage {
                 send.privates(qqCode, String.format("已绑定通行证ID:%s", miHoYo.getUid()));
             }
         } catch (Exception e) {
+            log.warn("通行证ID或Cookie未填写正确:{}", e.getMessage());
             send.privates(qqCode, "通行证ID或Cookie未填写正确");
         }
     }
@@ -139,14 +141,14 @@ public class SignIn extends AbstractMessage {
     /**
      * 监听私聊开启/关闭米游社自动签到
      *
-     * @param privateMsg 私聊消息
-     * @param sender     发送消息
+     * @param msg 私聊消息
      */
     @OnPrivate
     @Filters(value = {@Filter(value = "开启米游社自动签到", matchType = MatchType.EQUALS, trim = true), @Filter(value = "关闭米游社自动签到", matchType = MatchType.EQUALS, trim = true)})
-    public void privateMsgAutomaticCheckin(PrivateMsg privateMsg, Sender sender) {
-        String qqCode = get.prCode(privateMsg);
-        String msgText = get.text(privateMsg);
+    public void privateMsgAutomaticCheckin(PrivateMsg msg) {
+        log.info("TriggerQQ: {} TriggerWord: {}", msg.getAccountInfo().getAccountCode(), msg.getText());
+        String qqCode = msg.getAccountInfo().getAccountCode();
+        String msgText = msg.getText();
         if (mapping.queryUidByQQ(qqCode) == 1) {
             if (Objects.equals(msgText, "开启米游社自动签到")) {
                 //开启当前QQ账号绑定的米游社通行证为自动签到
@@ -158,20 +160,20 @@ public class SignIn extends AbstractMessage {
                 send.privates(qqCode, "已关闭米游社自动签到");
             }
         } else {
-            send.privates(qqCode, "请先绑定米游社哦");
+            send.privates(qqCode, "请发送\"绑定米游社\"进行账号绑定");
         }
     }
 
     /**
      * 监听私聊解绑米游社
      *
-     * @param privateMsg 私聊消息
-     * @param sender     发送消息
+     * @param msg 私聊消息
      */
     @OnPrivate
     @Filter(value = "解绑米游社", matchType = MatchType.EQUALS, trim = true)
-    public void privateMsgUnbind(PrivateMsg privateMsg, Sender sender) {
-        String qqCode = get.prCode(privateMsg);
+    public void privateMsgUnbind(PrivateMsg msg) {
+        log.info("TriggerQQ: {} TriggerWord: {}", msg.getAccountInfo().getAccountCode(), msg.getText());
+        String qqCode = msg.getAccountInfo().getAccountCode();
         if (mapping.deleteByQQ(qqCode)) {
             send.privates(qqCode, "已解绑通行证ID");
         } else {
