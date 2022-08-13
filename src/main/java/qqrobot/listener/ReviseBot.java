@@ -6,8 +6,6 @@ import love.forte.simbot.annotation.Filter;
 import love.forte.simbot.annotation.OnGroup;
 import love.forte.simbot.annotation.OnlySession;
 import love.forte.simbot.api.message.events.GroupMsg;
-import love.forte.simbot.api.sender.Getter;
-import love.forte.simbot.api.sender.Setter;
 import love.forte.simbot.bot.*;
 import love.forte.simbot.component.mirai.message.MiraiMessageContentBuilder;
 import love.forte.simbot.component.mirai.message.MiraiMessageContentBuilderFactory;
@@ -29,18 +27,14 @@ import java.util.concurrent.TimeoutException;
 /**
  * 在线修改推送Bot-持续会话
  */
+@Slf4j
 @Component
 @AllArgsConstructor
-@Slf4j
 public class ReviseBot {
     /**
      * Bot管理器
      */
     private final BotManager manager;
-    /**
-     * 效验Bot账号
-     */
-    private final BotRegistrar re;
     /**
      * 消息内容生成器工厂
      */
@@ -68,11 +62,12 @@ public class ReviseBot {
      */
     @OnGroup
     @Filter(value = "修改bot", matchType = MatchType.EQUALS)
-    public synchronized void start(@NotNull GroupMsg m, @NotNull ListenerContext context, @NotNull Setter set, Getter get) {
+    public synchronized void start(@NotNull GroupMsg m, @NotNull ListenerContext context) {
         //获取当前群号
         String grCode = m.getGroupInfo().getGroupCode();
         //获取当前QQ
         String qqCode = m.getAccountInfo().getAccountCode();
+        log.info("TriggerGr: {} - ==> TriggerQQ: {} TriggerWord: {}", grCode, qqCode, m.getText());
         //创建Map储存Bot账号信息
         Map<Integer, String> map = new HashMap<>();
         //获取所有Bot
@@ -94,16 +89,9 @@ public class ReviseBot {
                 String timestamp = String.valueOf(new Date().getTime());
                 int length = timestamp.length();
                 int integer = Integer.parseInt(timestamp.substring(0, length - 3));
-                String zt = "在线";
-                try {
-                    BotRegisterInfo r = new BotRegisterInfo(botQQCode, "");
-                    re.registerBot(r);
-                } catch (WrongPasswordException | BotVerifyException e) {
-                    zt = "已冻结,请勿选择";
-                }
                 //创建合并消息单条内容
                 assert botAvatar != null;
-                forwardBuilder.add(m, integer, builder.text(String.format("序号:%s\n名称:%s\n账号:%s\n状态:%s\n", i, botName, botQQCode, zt)).image(botAvatar).build());
+                forwardBuilder.add(m, integer, builder.text(String.format("序号:%s\n名称:%s\n账号:%s\n", i, botName, botQQCode)).image(botAvatar).build());
                 //将序号和bot账号添加到Map内
                 map.put(i, botQQCode);
             }
@@ -112,7 +100,7 @@ public class ReviseBot {
         if (!this.map.containsKey(m.getId())) {
             //根据当前QQ查找已绑定的Bot账号
             String botQQ = reviseBot.QueryBotQQAccordingToQQ(qqCode);
-            Bot bot = null;
+            Bot bot;
             try {
                 //指定一个Bot账号
                 bot = manager.getBot(botQQ);
