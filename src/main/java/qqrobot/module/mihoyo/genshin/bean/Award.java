@@ -1,8 +1,5 @@
 package qqrobot.module.mihoyo.genshin.bean;
 
-import lombok.*;
-//生成空参构造方法
-//生成带参构造方法
 public class Award {
     private String icon;
     private String name;
