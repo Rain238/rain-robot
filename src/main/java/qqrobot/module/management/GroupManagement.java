@@ -11,9 +11,10 @@ import org.springframework.stereotype.Component;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * 不建议使用后期重新整过
  * 群管模块实现
  */
-@Component
+//@Component
 public class GroupManagement{
     /**
      * 群管模块主功能区
