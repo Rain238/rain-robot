@@ -1,5 +1,6 @@
 package qqrobot.listener;
 
+import lombok.extern.slf4j.Slf4j;
 import love.forte.simbot.annotation.Filter;
 import love.forte.simbot.annotation.OnGroup;
 import love.forte.simbot.annotation.OnPrivate;
@@ -10,6 +11,7 @@ import love.forte.simbot.api.message.events.GroupMsg;
 import love.forte.simbot.api.message.events.MsgGet;
 import love.forte.simbot.api.message.events.PrivateMsg;
 import love.forte.simbot.filter.MatchType;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import qqrobot.simple.Send;
@@ -22,6 +24,7 @@ import qqrobot.simple.Send;
  * 有消息回复不用担心，代表已经重启了，手动关闭请打开
  * 任务管理器找到进程结束掉即可.
  */
+@Slf4j
 @Component
 public class GroupPrivateChat {
     /**
@@ -48,13 +51,17 @@ public class GroupPrivateChat {
         this.send = send;
     }
 
+
     /**
      * 关闭程序指令
+     *
+     * @param msg 消息父类
      */
     @OnGroup
     @OnPrivate
     @Filter(value = ".关机", matchType = MatchType.EQUALS, trim = true)
     public synchronized void shutdown(MsgGet msg) {
+        logInfo(msg);
         String str = "说谁丑呢,不跟你玩了,哼！";
         //获取当前触发者的QQ账号
         final String qqCode = msg.getAccountInfo().getAccountCode();
@@ -84,12 +91,14 @@ public class GroupPrivateChat {
     /**
      * 重启程序指令
      *
+     * @param msg 消息父类
      * @throws Exception 非法结束异常
      */
     @OnGroup
     @OnPrivate
     @Filter(value = ".重启", matchType = MatchType.EQUALS, trim = true)
     public synchronized void reboot(MsgGet msg) throws Exception {
+        logInfo(msg);
         String str = "才不会帮你重启系统呢！哼！";
         //获取当前触发者的QQ账号
         final String qqCode = msg.getAccountInfo().getAccountCode();
@@ -121,14 +130,114 @@ public class GroupPrivateChat {
     }
 
     /**
-     * 鸡你太美
-     * 蔡徐坤打篮球小游戏
+     * 使用说明
+     *
+     * @param msg 消息父类
      */
     @OnGroup
     @OnPrivate
-    @Filter(value = "鸡你太美", matchType = MatchType.EQUALS, trim = true)
-    public synchronized void chickenYouAreSoBeautiful(GroupMsg msg) {
-        send.groups(msg, Master, "游戏地址\nhttps://fangkuai767.github.io/EatKun/");
+    @Filter(value = ".h1", matchType = MatchType.EQUALS, trim = true)
+    public void h1(MsgGet msg) {
+        logInfo(msg);
+        String str = "本梦的使用手册\nhttps://www.yuque.com/docs/share/b3b3c9c8-843f-457c-b1e7-eb89cfbb407e";
+        if (msg instanceof GroupMsg) {
+            send.groups((GroupMsg) msg, Master, str);
+        } else if (msg instanceof PrivateMsg) {
+            send.privates((PrivateMsg) msg, str);
+        }
     }
 
+    /**
+     * 蔡徐坤打篮球小游戏
+     *
+     * @param msg 消息父类
+     */
+    @OnGroup
+    @OnPrivate
+    @Filter(value = ".蔡徐坤", matchType = MatchType.EQUALS, trim = true)
+    public synchronized void chickenYouAreSoBeautiful(MsgGet msg) {
+        logInfo(msg);
+        String str = "游戏地址\nhttps://fangkuai767.github.io/EatKun/";
+        if (msg instanceof GroupMsg) {
+            send.groups((GroupMsg) msg, Master, str);
+        } else if (msg instanceof PrivateMsg) {
+            send.privates((PrivateMsg) msg, str);
+        }
+    }
+
+    /**
+     * 原神怪物抗性表
+     *
+     * @param msg 消息父类
+     */
+    @OnGroup
+    @OnPrivate
+    @Filter(value = ".怪物抗性", matchType = MatchType.EQUALS, trim = true)
+    public synchronized void monsterResistance(MsgGet msg) {
+        logInfo(msg);
+        String str = "抗性地址\nhttps://wiki.biligame.com/ys/%E6%80%AA%E7%89%A9%E6%8A%97%E6%80%A7%E4%B8%80%E8%A7%88?type=json";
+        if (msg instanceof GroupMsg) {
+            send.groups((GroupMsg) msg, Master, str);
+        } else if (msg instanceof PrivateMsg) {
+            send.privates((PrivateMsg) msg, str);
+        }
+    }
+    @OnGroup
+    @OnPrivate
+    @Filter(value = "随机涩图", matchType = MatchType.EQUALS, trim = true)
+    public void random(@NotNull MsgGet msg) {
+        logInfo(msg);
+        MessageContentBuilder message = mCBF.getMessageContentBuilder();
+        MessageContent image = message.image("http://www.fairiy.com:81/api/index?sort=all").build();
+        groupsPrivates(msg,image);
+    }
+    @OnGroup
+    @OnPrivate
+    @Filter(value = "竖屏涩图", matchType = MatchType.EQUALS, trim = true)
+    public void mp(@NotNull MsgGet msg) {
+        logInfo(msg);
+        MessageContentBuilder message = mCBF.getMessageContentBuilder();
+        MessageContent image = message.image("http://www.fairiy.com:81/api/index?sort=mp").build();
+        groupsPrivates(msg,image);
+    }
+    @OnGroup
+    @OnPrivate
+    @Filter(value = "横屏涩图", matchType = MatchType.EQUALS, trim = true)
+    public void pc(@NotNull MsgGet msg) {
+        logInfo(msg);
+        MessageContentBuilder message = mCBF.getMessageContentBuilder();
+        MessageContent image = message.image("http://www.fairiy.com:81/api/index?sort=pc").build();
+        groupsPrivates(msg,image);
+    }
+    @OnGroup
+    @OnPrivate
+    @Filter(value = "兽耳涩图", matchType = MatchType.EQUALS, trim = true)
+    public void cat(@NotNull MsgGet msg) {
+        logInfo(msg);
+        MessageContentBuilder message = mCBF.getMessageContentBuilder();
+        MessageContent image = message.image("http://www.fairiy.com:81/api/index?sort=cat").build();
+        groupsPrivates(msg,image);
+    }
+    @OnGroup
+    @OnPrivate
+    @Filter(value = "星空涩图", matchType = MatchType.EQUALS, trim = true)
+    public void xing(@NotNull MsgGet msg) {
+        logInfo(msg);
+        MessageContentBuilder message = mCBF.getMessageContentBuilder();
+        MessageContent image = message.image("http://www.fairiy.com:81/api/index?sort=xing").build();
+        groupsPrivates(msg,image);
+    }
+    private void groupsPrivates(MsgGet msg,MessageContent image){
+        if (msg instanceof GroupMsg){
+            send.groups((GroupMsg) msg,image);
+        }else if (msg instanceof PrivateMsg){
+            send.privates(msg.getAccountInfo().getAccountCode(), image);
+        }
+    }
+    private void logInfo(MsgGet msg) {
+        if (msg instanceof GroupMsg)
+            log.info("TriggerGr: {} - ==> TriggerQQ: {} TriggerWord: {}", ((GroupMsg) msg).getGroupInfo().getGroupCode(), msg.getAccountInfo().getAccountCode(), msg.getText());
+        else if (msg instanceof PrivateMsg)
+            log.info("TriggerQQ: {} TriggerWord: {}", msg.getAccountInfo().getAccountCode(), msg.getText());
+    }
 }
