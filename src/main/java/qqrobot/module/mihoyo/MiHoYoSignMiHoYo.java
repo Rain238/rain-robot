@@ -8,6 +8,7 @@ import qqrobot.module.mihoyo.bean.PostResult;
 import qqrobot.util.DateTimeUtils;
 import qqrobot.util.HttpUtils;
 import com.alibaba.fastjson.TypeReference;
+
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.security.SecureRandom;
@@ -44,7 +45,7 @@ public class MiHoYoSignMiHoYo extends MiHoYoAbstractSign {
      * @param stoken   服务器令牌
      * @param executor 线程池
      */
-    public MiHoYoSignMiHoYo(String cookie, MiHoYoConfig.Hub hub, String stuid, String stoken, ThreadPoolExecutor executor) {
+    public MiHoYoSignMiHoYo(String cookie, MiHoYoConfig.Hub hub, String stuid, String stoken, ThreadPoolExecutor executor, String type, String version, String salt) {
         //将cookie赋值给父类
         super(cookie);
         //签到执行类型
@@ -54,15 +55,14 @@ public class MiHoYoSignMiHoYo extends MiHoYoAbstractSign {
         //服务器令牌
         this.stoken = stoken;
         //设置类型
-        setClientType("2");
+        setClientType(type);
         //设置版本号
-        setAppVersion("2.8.0");
+        setAppVersion(version);
         //设置设置校验码
-        setSalt("dmq2p7ka6nsu0d3ev6nex4k1ndzrnfiy");
+        setSalt(salt);
         //设置线程池
         this.pool = executor;
     }
-
     public Object doSign() throws Exception {
         log.info("{}社区签到任务开始", hub.getName());
         String sign = (String) sign();
@@ -74,14 +74,18 @@ public class MiHoYoSignMiHoYo extends MiHoYoAbstractSign {
         genShinHomePosts.addAll(homePosts);
         log.info("{}获取社区帖子数: {}", hub.getName(), genShinHomePosts.size());
         //执行任务
-        Future<Integer> vpf = pool.submit(createTask(this, "viewPost", VIEW_NUM, genShinHomePosts));
-        Future<Integer> spf = pool.submit(createTask(this, "sharePost", SHARE_NUM, genShinHomePosts));
-        Future<Integer> upf = pool.submit(createTask(this, "upVotePost", UP_VOTE_NUM, genShinHomePosts));
-        //打印日志
+        Callable<Integer> viewPost = createTask(this, "viewPost", VIEW_NUM, genShinHomePosts);
+        Callable<Integer> sharePost = createTask(this, "sharePost", SHARE_NUM, genShinHomePosts);
+        Callable<Integer> upVotePost = createTask(this, "upVotePost", UP_VOTE_NUM, genShinHomePosts);
+        FutureTask<Integer> vpf = new FutureTask<Integer>(viewPost);
+        FutureTask<Integer> upf = new FutureTask<Integer>(upVotePost);
+        FutureTask<Integer> spf = new FutureTask<Integer>(sharePost);
+        List<FutureTask<Integer>> fts = Arrays.asList(vpf, upf, spf);
+        for (FutureTask<Integer> ft : fts) new Thread(ft).start();
+        countDownLatch.await();
         log.info("浏览帖子,成功: {},失败：{}", vpf.get(), VIEW_NUM - vpf.get());
         log.info("点赞帖子,成功: {},失败：{}", upf.get(), UP_VOTE_NUM - upf.get());
         log.info("分享帖子,成功: {},失败：{}", spf.get(), SHARE_NUM - spf.get());
-//        pool.shutdown();  会导致阻塞
         log.info("{}社区签到任务完成", hub.getName());
         String executionTime = DateTimeUtils.convertTimest(System.currentTimeMillis(), "yyyy-MM-dd HH:mm:ss");
         String msg = "执行时间: %s\n社区签到: %s\n获取社区帖子数: %s\n浏览帖子: %s,点赞帖子: %s,分享帖子: %s\n已领取今日米游币";
@@ -205,7 +209,11 @@ public class MiHoYoSignMiHoYo extends MiHoYoAbstractSign {
      */
     public boolean sharePost(PostResult post) {
         JSONObject result = HttpUtils.doGet(String.format(MiHoYoConfig.HUB_SHARE_URL, hub.getForumId()), getHeaders());
-        return "OK".equals(result.get("message"));
+        if ("OK".equals(result.get("message"))) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
