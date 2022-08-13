@@ -1,6 +1,5 @@
 package qqrobot.listener;
 
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import love.forte.common.ioc.annotation.Beans;
 import love.forte.simbot.annotation.*;
@@ -16,6 +15,7 @@ import love.forte.simbot.bot.Bot;
 import love.forte.simbot.bot.BotManager;
 import love.forte.simbot.filter.MatchType;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import qqrobot.listener.mapper.GsMapping;
 import qqrobot.listener.mapper.MihoyoMapping;
@@ -33,7 +33,7 @@ import java.util.List;
  */
 @Slf4j
 @Component
-@AllArgsConstructor
+//@AllArgsConstructor
 public class PrivateChat {
     /**
      * 原神数据表
@@ -50,7 +50,7 @@ public class PrivateChat {
     /**
      * 消息内容生成器工厂
      */
-    private final MessageContentBuilderFactory messageContentBuilderFactory;
+    private final MessageContentBuilderFactory factory;
     /**
      * Bot数据表
      */
@@ -59,18 +59,32 @@ public class PrivateChat {
      * 发送消息
      */
     private final Send send;
+    /**
+     * 最高权限操控者账号，可在配置文件中修改
+     */
+    @Value("${master.qq}")
+    private String Master;
+
+    public PrivateChat(GsMapping gsMapping, MihoyoMapping mihoyoMapping, BotManager manager, MessageContentBuilderFactory factory, ReviseBotMapping reviseBot, Send send) {
+        this.gsMapping = gsMapping;
+        this.mihoyoMapping = mihoyoMapping;
+        this.manager = manager;
+        this.factory = factory;
+        this.reviseBot = reviseBot;
+        this.send = send;
+    }
 
     /**
-     * 监听好友请求事件  自动同意加为好友
+     * 监听好友请求事件
+     * Bot自动同意加为好友
      *
      * @param friend 监听好友请求事件
      * @param setter 设置自动同意好友
      */
     @OnFriendAddRequest
     public void friend(@NotNull FriendAddRequest friend, @NotNull Setter setter) {
-        //Bot自动同意好友请求
+        log.info("新增好友申请: {} 附带消息: {}", friend.getAccountInfo().getAccountCode(), friend.getFlag());
         setter.setFriendAddRequestAsync(friend.getFlag(), friend.getAccountInfo().getAccountNickname(), true, false);
-
     }
 
     /**
@@ -85,15 +99,17 @@ public class PrivateChat {
         String botQQ = getter.getBotInfo().getAccountCode();
         //获取当前好友QQ
         String friendQQ = fi.getAccountInfo().getAccountCode();
+        log.info("Remind: {} - ==> 已经成为 {} 好友", friendQQ, botQQ);
         //查询对方账号是否注册,注册过将不再执行注册,以免抛出异常
         if (!reviseBot.queryQQ(friendQQ)) {
             //将对方账号和当前Bot账号进行注册
             reviseBot.add(friendQQ, botQQ);
         }
-        send.privates(friendQQ, botQQ, String.format("Hello主人，我是 %s 你的专属消息推送助手，如你不喜欢我可在总群发送“修改bot”，选择你的专属推送助手", getter.getBotInfo().getBotName()));
+//        send.privates(friendQQ, botQQ, String.format("Hello主人，我是 %s 你的专属消息推送助手，如你不喜欢我可在总群发送“修改bot”，选择你的专属推送助手", getter.getBotInfo().getBotName()));
+        send.privates(friendQQ, botQQ, String.format("Hello主人，我是 %s 你的专属消息推送助手", getter.getBotInfo().getBotName()));
         send.privates(friendQQ, botQQ, "第一次使用不会怎么办？");
         send.privates(friendQQ, botQQ, "亲爱的主人，看这里\nhttps://www.yuque.com/docs/share/daff7200-3d76-48e8-9e75-29b6f4034d4e?# 《樱野栗梦使用手册》");
-        send.privates(friendQQ, botQQ, "主人如有其他问题可联系给予我生命的雨雨酱：3164395730");
+        send.privates(friendQQ, botQQ, String.format("主人如有其他问题可联系给予我生命的主人酱：%s", Master));
     }
 
     /**
@@ -107,6 +123,7 @@ public class PrivateChat {
         String currentBotCode = friendReduce.getBotInfo().getAccountCode();
         //获取被删好友的QQ账号
         String qqCode = friendReduce.getAccountInfo().getAccountCode();
+        log.info("DeleteRemind: {} - ==> 已将 {} Bot删除...", qqCode, currentBotCode);
         //根据QQ查询Bot账号
         String botCode = reviseBot.QueryBotQQAccordingToQQ(qqCode);
         //判断删除的是否为已绑的Bot账号,如果是则清空全部数据,如果不是则不执行任何操作
@@ -129,6 +146,7 @@ public class PrivateChat {
     @OnPrivate
     @Filter(value = "bot列表", matchType = MatchType.EQUALS, trim = true)
     public void botList(@NotNull PrivateMsg msg) {
+        log.info("TriggerQQ: {} TriggerWord: {}", msg.getAccountInfo().getAccountCode(), msg.getText());
         String qqCode = msg.getAccountInfo().getAccountCode();
         //获取所有Bot
         List<Bot> bots = manager.getBots();
@@ -140,9 +158,25 @@ public class PrivateChat {
             //获取bot名称
             String botName = bot.getBotInfo().getAccountNickname();
             //获取消息工厂
-            MessageContentBuilder message = messageContentBuilderFactory.getMessageContentBuilder();
+            MessageContentBuilder message = factory.getMessageContentBuilder();
             assert botAvatar != null;
             send.privates(qqCode, message.text(String.format("名称:%s\n账号:%s\n", botName, botQQCode)).image(botAvatar).build());
         }
     }
+
+    //    @OnPrivate
+//    public void a(@NotNull PrivateMsg msg) {
+//        final String originalData = msg.getOriginalData();
+//        System.out.println(originalData);
+//        MessageContent msgContent = msg.getMsgContent();
+//        // 打印消息主体
+//        System.out.println(msgContent);
+//        // 打印消息主体中的所有图片的链接（如果有的话）
+//        List<Neko> imageCats = msgContent.getCats("image");
+//        System.out.println("img counts: " + imageCats.size());
+//        for (Neko image : imageCats) {
+//            System.out.println("Img url: " + image.get("url"));
+//        }
+//    }
+
 }
