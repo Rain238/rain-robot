@@ -5,14 +5,14 @@ package qqrobot.module.mihoyo;
  * &#064;Date  2022/5/20 12:08
  */
 public class MiHoYoConfig {
-    //版本号
-    public static final String APP_VERSION = "2.3.0"; // 切勿乱修改
+    //版本号 切勿乱修改
+    public static final String APP_VERSION = "2.3.0";
 
     /**
      * 原神API
      */
-    //米游社原神签到官方ID
-    public static final String ACT_ID = "e202009291139501"; // 切勿乱修改
+    //米游社原神签到官方ID 切勿乱修改
+    public static final String ACT_ID = "e202009291139501";
     //Referer请求头来源地址
     public static final String REFERER_URL = String.format("https://webstatic.mihoyo.com/bbs/event/signin-ys/index.html?bbs_auth_required=%s&act_id=%s&utm_source=%s&utm_medium=%s&utm_campaign=%s", true, ACT_ID, "bbs", "mys", "icon");
     //原神奖励
@@ -29,21 +29,22 @@ public class MiHoYoConfig {
     /**
      * hub
      */
-
+    //效验Token
     public static final String HUB_COOKIE2_URL = "https://api-takumi.mihoyo.com/auth/api/getMultiTokenByLoginTicket?login_ticket=%s&token_types=3&uid=%s";
-
+    //登陆接口
     public static final String HUB_SIGN_URL = "https://bbs-api.mihoyo.com/apihub/sapi/signIn?gids=%s";
-
+    //获取论坛帖子列表
     public static final String HUB_LIST1_URL = "https://bbs-api.mihoyo.com/post/api/getForumPostList?forum_id=%s&is_good=false&is_hot=false&page_size=25&sort_type=1";
-
+    //获取帖子
     public static final String HUB_LIST2_URL = "https://bbs-api.mihoyo.com/post/api/feeds/posts?fresh_action=1&gids=%s&last_id=";
-
+    //获取完整帖子
     public static final String HUB_VIEW_URL = "https://bbs-api.mihoyo.com/post/api/getPostFull?post_id=%s";
-
+    //米游社分享帖子
     public static final String HUB_SHARE_URL = "https://bbs-api.mihoyo.com/apihub/api/getShareConf?entity_id=%s&entity_type=1";
-
+    //米游社帖子点赞
     public static final String HUB_VOTE_URL = "https://bbs-api.mihoyo.com/apihub/sapi/upvotePost";
 
+    //枚举
     public enum HubsEnum {
         BH3(new Hub.Builder().setId("1").setForumId("1").setName("崩坏3").setUrl("https://bbs.mihoyo.com/bh3/").build()),
         YS(new Hub.Builder().setId("2").setForumId("26").setName("原神").setUrl("https://bbs.mihoyo.com/ys/").build()),
