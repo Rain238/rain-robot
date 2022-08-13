@@ -27,8 +27,6 @@ import java.util.Map;
 @Slf4j
 public class HttpUtils {
 
-//    private static Logger logger = LogManager.getLogger(HttpUtils.class.getName());
-
     private HttpUtils() {
 
     }
@@ -158,7 +156,7 @@ public class HttpUtils {
         JSONObject resultJson = null;
         try {
             URIBuilder uriBuilder = new URIBuilder(url);
-            List<NameValuePair> params = null;
+            List<NameValuePair> params;
             if (data != null && !data.isEmpty()) {
                 params = new ArrayList<>();
                 for (String key : data.keySet()) {
