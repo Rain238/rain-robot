@@ -12,10 +12,10 @@ import qqrobot.mark.LoadMicroMark;
 @EnableScheduling
 @SpringBootApplication
 public class MyBotApplication {
-
     public static void main(String[] args) {
-        new LoadMicroMark().logo();
         SpringApplication.run(MyBotApplication.class, args);
         log.info("机器人启动成功~~~~");
+        new LoadMicroMark().logo();
+
     }
 }
