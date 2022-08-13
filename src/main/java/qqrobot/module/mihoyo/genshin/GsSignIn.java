@@ -5,14 +5,13 @@ import love.forte.simbot.annotation.Filter;
 import love.forte.simbot.annotation.Filters;
 import love.forte.simbot.annotation.OnPrivate;
 import love.forte.simbot.api.message.events.PrivateMsg;
-import love.forte.simbot.api.sender.Sender;
 import love.forte.simbot.filter.MatchType;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import qqrobot.module.mihoyo.AbstractMessage;
 import qqrobot.module.mihoyo.genshin.bean.GenshinSignIn;
 import qqrobot.module.mihoyo.genshin.mapper.GsSignInMapping;
 import qqrobot.module.mihoyo.sign.mapper.SignInMapping;
-import qqrobot.simple.Get;
 import qqrobot.util.Base64Util;
 import qqrobot.simple.Send;
 
@@ -32,42 +31,46 @@ import java.util.Objects;
 public class GsSignIn extends AbstractMessage {
     private final GsSignInMapping mapping;//原神数据表
     private final Send send;//发送消息
-    private final Get get;//获取数据
+    @Value("${simbot.mihoyo.genshin.genshin-client-type}")
+    private String type;
+    @Value("${simbot.mihoyo.genshin.genshin-app-version}")
+    private String version;
+    @Value("${simbot.mihoyo.genshin.genshin-salt}")
+    private String salt;
 
-    public GsSignIn(GsSignInMapping gsSignMessage, SignInMapping signInMapping, Send send, GsSignInMapping mapping, Send send1, Get get) {
+    public GsSignIn(GsSignInMapping gsSignMessage, SignInMapping signInMapping, Send send, GsSignInMapping mapping, Send send1) {
         super(gsSignMessage, signInMapping, send);
         this.mapping = mapping;
         this.send = send1;
-        this.get = get;
     }
 
 
     /**
      * 监听私聊绑定原神
      *
-     * @param privateMsg 私聊消息
-     * @param sender     发送消息
+     * @param msg 私聊消息
      */
     @OnPrivate
     @Filter(value = "绑定原神", matchType = MatchType.EQUALS)
-    public void privateBoundGenshinImpact(PrivateMsg privateMsg, Sender sender) {
-        String qqCode = get.prCode(privateMsg);
+    public void privateBoundGenshinImpact(PrivateMsg msg) {
+        log.info("TriggerQQ: {} TriggerWord: {}", msg.getAccountInfo().getAccountCode(), msg.getText());
+        String qqCode = msg.getAccountInfo().getAccountCode();
         send.privates(qqCode, "格式为：\n原神Uid=146613006\n原神Cookie=_MHYUUID=xxx,请注意字母大小写");
     }
 
     /**
      * 监听私聊绑定原神格式
      *
-     * @param privateMsg 私聊消息
-     * @param sender     发送消息
+     * @param msg 私聊消息
      */
     @OnPrivate
     @Filters(value = {@Filter(value = "原神Uid=", matchType = MatchType.CONTAINS, trim = true), @Filter(value = "原神Cookie=", matchType = MatchType.CONTAINS, trim = true)})
-    public void privateBindUidAndCookie(PrivateMsg privateMsg, Sender sender) {
+    public void privateBindUidAndCookie(PrivateMsg msg) {
+        log.info("TriggerQQ: {} TriggerWord: {}", msg.getAccountInfo().getAccountCode(), msg.getText());
         //获取消息文本
-        String msgText = get.text(privateMsg);
+        String msgText = msg.getText();
         //获取当前QQ账号
-        String qqCode = get.prCode(privateMsg);
+        String qqCode = msg.getAccountInfo().getAccountCode();
         try {
             //截取出Uid的值                                                                去除换行符
             String uid = msgText.split("原神Uid=")[1].split("原神Cookie=")[0].replace("\n", "");
@@ -84,7 +87,7 @@ public class GsSignIn extends AbstractMessage {
                 send.privates(qqCode, "该Uid已绑定过了哦");
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.warn("Uid或Cookie未填写正确:{}", e.getMessage());
             send.privates(qqCode, "Uid或Cookie未填写正确");
         }
     }
@@ -92,16 +95,16 @@ public class GsSignIn extends AbstractMessage {
     /**
      * 监听私聊解绑原神账号
      *
-     * @param privateMsg 私聊消息
-     * @param sender     发送消息
+     * @param msg 私聊消息
      */
     @OnPrivate
     @Filter(value = "解绑原神", matchType = MatchType.CONTAINS)
-    public void privateUnbind(PrivateMsg privateMsg, Sender sender) {
+    public void privateUnbind(PrivateMsg msg) {
+        log.info("TriggerQQ: {} TriggerWord: {}", msg.getAccountInfo().getAccountCode(), msg.getText());
         //获取消息文本
-        String msgText = get.text(privateMsg);
+        String msgText = msg.getText();
         //获取当前QQ账号
-        String qqCode = get.prCode(privateMsg);
+        String qqCode = msg.getAccountInfo().getAccountCode();
         try {
             //从消息体中截取出uid
             String uid = msgText.split("解绑原神")[1];
@@ -114,6 +117,7 @@ public class GsSignIn extends AbstractMessage {
                 send.privates(qqCode, "UID未绑定");
             }
         } catch (Exception e) {
+            log.warn("未输入正确Uid:{}", e.getMessage());
             send.privates(qqCode, "未输入正确Uid");
         }
     }
@@ -122,14 +126,14 @@ public class GsSignIn extends AbstractMessage {
     /**
      * 监听私/群聊原神签到
      *
-     * @param privateMsg 私聊消息
-     * @param sender     发送消息
+     * @param msg 私聊消息
      */
     @OnPrivate
     @Filter(value = "原神签到", matchType = MatchType.EQUALS)
-    public void genshinSign(PrivateMsg privateMsg, Sender sender) {
+    public void genshinSign(PrivateMsg msg) {
+        log.info("TriggerQQ: {} TriggerWord: {}", msg.getAccountInfo().getAccountCode(), msg.getText());
         //获取当前QQ账号
-        String qqCode = get.prCode(privateMsg);
+        String qqCode = msg.getAccountInfo().getAccountCode();
         //查询当前QQ号绑定的原神账号是否存在没有则先绑定账号
         if (mapping.queryUidByQQ(qqCode) != 0) {
             //一个QQ可绑定多个原神UID
@@ -138,29 +142,28 @@ public class GsSignIn extends AbstractMessage {
                 //解密cookie
                 String cookies = new String(Base64Util.base64decode(signIn.getCookie()));
                 //创建原神签到实现类
-                GenShinSignMiHoYo genshin = new GenShinSignMiHoYo(cookies, signIn.getUid());
+                GenShinSignMiHoYo genshin = new GenShinSignMiHoYo(cookies, signIn.getUid(), type, version, salt);
                 //获取签到状态
                 String code = (String) genshin.sign();
                 this.gsSignMessage(qqCode, genshin.getName(), signIn.getUid(), genshin.hubSign(), code);
             }
-        } else {
-            send.privates(qqCode, "请发送\"绑定原神\"进行账号绑定");
-        }
+        } else send.privates(qqCode, "请发送\"绑定原神\"进行账号绑定");
+
     }
 
     /**
      * 监听私聊开启/关闭原神自动签到
      *
-     * @param privateMsg 私聊消息
-     * @param sender     发送消息
+     * @param msg 私聊消息
      */
     @OnPrivate
     @Filters(value = {@Filter(value = "开启原神自动签到", matchType = MatchType.EQUALS, trim = true), @Filter(value = "关闭原神自动签到", matchType = MatchType.EQUALS, trim = true)})
-    public void groupMsgAutomaticCheckin(PrivateMsg privateMsg, Sender sender) {
+    public void groupMsgAutomaticCheckin(PrivateMsg msg) {
+        log.info("TriggerQQ: {} TriggerWord: {}", msg.getAccountInfo().getAccountCode(), msg.getText());
         //获取消息文本
-        String msgText = get.text(privateMsg);
+        String msgText = msg.getText();
         //获取当前QQ账号
-        String qqCode = get.prCode(privateMsg);
+        String qqCode = msg.getAccountInfo().getAccountCode();
         //根据当前QQ查询是否存在已绑定记录
         if (mapping.queryUidByQQ(qqCode) != 0) {
             if (Objects.equals(msgText, "开启原神自动签到")) {
