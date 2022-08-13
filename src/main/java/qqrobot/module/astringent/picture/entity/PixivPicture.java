@@ -31,6 +31,9 @@ import java.util.Objects;
 /**
  * 接入Lolicon API(<a href="https://api.lolicon.app/#/setu">...</a>)
  * 随机涩图模块,图片来源于P站
+ * <p>
+ * &#064;Author  RainRain
+ * &#064;Data  2022/5/24 15:40
  */
 @Slf4j
 @Component
@@ -168,6 +171,9 @@ public class PixivPicture {
                     String timestamp = String.valueOf(new Date().getTime());
                     int length = timestamp.length();
                     int integer = Integer.parseInt(timestamp.substring(0, length - 3));
+                    /*
+                     * 此处将注释删除加入代理即可大幅增加获取成功概率 代理到新url链接即可
+                     */
                     forwardBuilder.add(msgGet, integer, builder.text(introduce(pixiv)).image(newUrl).build());
                 }
             });
