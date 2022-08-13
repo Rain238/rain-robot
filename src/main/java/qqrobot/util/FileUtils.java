@@ -9,14 +9,11 @@ import java.io.*;
 
 public class FileUtils {
 
-
     private FileUtils() {
     }
-
     public static String loadDaily(String path) {
         return loadDailyFile(path);
     }
-
 
     public static String loadDailyFile(String path) {
         FileInputStream fis = null;
