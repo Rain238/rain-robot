@@ -1,73 +1,54 @@
 server:
-  #本项目服务端口
-  port: 8088
+  port: 8088 #端口号
 spring:
-  #配置数据源
-  datasource:
-    #数据库地址
+  datasource: #数据库配置
     url: jdbc:mysql://localhost:3306/qqrobot
-    #数据库账号
     username: root
-    #数据库密码
     password: 123456
-    #驱动程序
     driver-class-name: com.mysql.cj.jdbc.Driver
-simbot:
+simbot: #Bot配置
   core:
-    #持续会话超时时间
     continuousSession:
-      #默认2分钟(毫秒)
-      defaultTimeout: 120000
+      defaultTimeout: 120000 #持续会话超时时间
     # 账号:密码，多个用逗号(,)分隔或者用yaml的多项配置
-    bots: 123456789:xxxxx
+    bots: 账号:密码
   component:
     mirai:
-      # mirai心跳周期. 过长会导致被服务器断开连接. 单位毫秒 默认30000。
-      heartbeat-period-millis: 30000
-      # 每次心跳时等待结果的时间.一旦心跳超时, 整个网络服务将会重启 (将消耗约 1s). 除正在进行的任务 (如图片上传) 会被中断外, 事件和插件均不受影响. 默认5000
-      heartbeat-timeout-millis: 5000
-      # 心跳失败后的第一次重连前的等待时间. 默认5000
-      first-reconnect-delay-millis: 5000
-      # 重连失败后, 继续尝试的每次等待时间 默认5000
-      reconnect-period-millis: 5000
-      # 最多尝试多少次重连
-      reconnection-retry-times: 2147483647
+      heartbeat-period-millis: 30000 # mirai心跳周期. 过长会导致被服务器断开连接. 单位毫秒。
+      heartbeat-timeout-millis: 5000 # 每次心跳时等待结果的时间.一旦心跳超时, 整个网络服务将会重启 (将消耗约 1s). 除正在进行的任务 (如图片上传) 会被中断外, 事件和插件均不受影响.
+      first-reconnect-delay-millis: 5000 # 心跳失败后的第一次重连前的等待时间.
+      reconnect-period-millis: 5000 # 重连失败后, 继续尝试的每次等待时间
+      reconnection-retry-times: 2147483647 # 最多尝试多少次重连
       # 使用协议类型。注，此值为枚举类 net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol 的元素值，
-      # 可选值为：ANDROID_PHONE、ANDROID_PAD、ANDROID_WATCH、IPAD 默认ANDROID_PHONE
-      # ANDROID_PHONE为手机在线，可修改协议为IPAD，使用IPAD的协议可上手机QQ不会互顶
-      protocol: ANDROID_PHONE
-      # 是否关闭mirai的bot logger
-      no-bot-log: true
-      # 关闭mirai网络日志
-      no-network-log: true
-      # mirai bot log切换使用simbot的log
-      use-simbot-bot-log: true
-      # mirai 网络log 切换使用simbot的log
-      use-simbot-network-log: true
-      # mirai配置自定义deviceInfoSeed的时候使用的随机种子。默认为1.
-      device-info-seed: 1
+      # 可选值为：ANDROID_PHONE、ANDROID_PAD、ANDROID_WATCH IPAD
+      protocol: IPAD
+      no-bot-log: true # 是否关闭mirai的bot logger
+      no-network-log: true # 关闭mirai网络日志
+      use-simbot-bot-log: true # mirai bot log切换使用simbot的log
+      use-simbot-network-log: true # mirai 网络log 切换使用simbot的log
+      device-info-seed: 1 # mirai配置自定义deviceInfoSeed的时候使用的随机种子。默认为1.
       # mirai图片缓存策略，为枚举 love.forte.simbot.component.mirai.configuration.MiraiCacheType 的元素值，
-      # 可选为 FILE、 MEMORY
-      cache-type: MEMORY
-      # 如果配置项 simbot.mirai.cacheType 的值为 FILE，此处为缓存文件的保存目录。为空时默认为系统临时文件夹。
-      cache-directory:
-      # 登录验证码处理器，当登录需要输入验证码的时候可能会用到。
-      login-solver-type: DEFAULT
-      # 如果不为空，此处代表指定一个 deviceInfo 的 json文件路径。
-      dispatcher:
-        # mirai组件中，对事件进行调度的线程池参数：最大线程数。
-        core-pool-size: 8
-        # mirai组件中，对事件进行调度的线程池参数：最大线程数。
-        maximum-pool-size: 8
-        # mirai组件中，对事件进行调度的线程池参数：线程存活时间（毫秒）
-        keep-alive-time: 1000
-# 最高权限QQ 配置为自己的即可
+      cache-type: MEMORY # 可选为 FILE、 MEMORY
+      cache-directory: # 如果配置项 simbot.mirai.cacheType 的值为 FILE，此处为缓存文件的保存目录。为空时默认为系统临时文件夹。
+      login-solver-type: DEFAULT # 登录验证码处理器，当登录需要输入验证码的时候可能会用到。
+      dispatcher: # 如果不为空，此处代表指定一个 deviceInfo 的 json文件路径。
+        core-pool-size: 8 # mirai组件中，对事件进行调度的线程池参数：最大线程数。
+        maximum-pool-size: 8 # mirai组件中，对事件进行调度的线程池参数：最大线程数。
+        keep-alive-time: 1000 # mirai组件中，对事件进行调度的线程池参数：线程存活时间（毫秒）
+  mihoyo: #米忽悠签到配置  请勿修改
+    genshin:
+      genshin-client-type: 2 #原神签到类型
+      genshin-app-version: 2.28.1 #原神签到版本号
+      genshin-salt: dWCcD2FsOUXEstC5f9xubswZxEeoBOTc #原神签到校验码
+    club:
+      miyou-club-type: 2 #米游社签到类型
+      miyou-club-version: 2.28.1 #米游社签到版本号
+      miyou-club-salt: dWCcD2FsOUXEstC5f9xubswZxEeoBOTc #米游社签到校验码
+logging: #配置日志xml
+  config: logback.xml
+  level:
+    qqrobot: trace
 master:
-  qq: 123456789
-# 重启脚本路径
-# 桌面新建文本文件，填写完将后缀改为.bat即可
-# 例：项目jar包路径和版本号自行修改
-# cd /d D:\IDEA\temporary\rain-robot\target
-# java -jar chestnut-dream-1.0.5.jar
-restart:
-  script: C:\\桌面\\bot.bat
+  qq: qq账号 #最高权限账号
+restart: #暂时搁置
+  script: D:\\桌面\\VisualBat\\Project.exe #重启/关机操作似乎仅对win系统有用
