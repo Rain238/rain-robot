@@ -16,7 +16,7 @@ import java.util.Map;
 
 /**
  * 原神签到实现类
- *
+ * <p>
  * &#064;Author  Light rain
  * &#064;Date  2022/5/20 2:34
  */
@@ -26,15 +26,15 @@ public class GenShinSignMiHoYo extends MiHoYoAbstractSign {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(GenShinSignMiHoYo.class);
     //</editor-fold>
 
-    public GenShinSignMiHoYo(String cookie, String uid) {
+    public GenShinSignMiHoYo(String cookie, String uid, String type, String version, String salt) {
         //将cookie/uid赋值给父类
         super(cookie, uid);
         //设置类型
-        setClientType("5");
+        setClientType(type);
         //设置版本号
-        setAppVersion("2.3.0");
+        setAppVersion(version);
         //设置校验码
-        setSalt("h8w582wxwgqvahcdkpvdhbh2w9casgfl");
+        setSalt(salt);
         //设置服务器id
         setRegion(getRegion());
     }
@@ -50,11 +50,8 @@ public class GenShinSignMiHoYo extends MiHoYoAbstractSign {
         data.put("region", this.region);
         data.put("uid", this.uid);
         JSONObject signResult = HttpUtils.doPost(MiHoYoConfig.SIGN_URL, getHeaders(), data);
-        if (signResult.getInteger("retcode") == 0) {
-            log.info("原神签到福利成功：{}", signResult.get("message"));
-        } else {
-            log.info("原神签到福利签到失败：{}", signResult.get("message"));
-        }
+        if (signResult.getInteger("retcode") == 0) log.info("原神签到福利成功：{}", signResult.get("message"));
+        else log.info("原神签到福利签到失败：{}", signResult.get("message"));
         return signResult.get("message");
     }
 
@@ -68,20 +65,26 @@ public class GenShinSignMiHoYo extends MiHoYoAbstractSign {
             JSONObject result = HttpUtils.doGet(MiHoYoConfig.ROLE_URL, getBasicHeaders());
             String uid = (String) result.getJSONObject("data").getJSONArray("list").getJSONObject(0).get("game_uid");
             String nickname = (String) result.getJSONObject("data").getJSONArray("list").getJSONObject(0).get("nickname");
-            log.info("获取用户UID：{}", uid);
+            log.info("当前用户UID：{}", uid);
             log.info("当前用户名称：{}", nickname);
             return nickname;
         } catch (Exception e) {
+            log.warn("获取当前原神用户UID或名称失败！");
             return "";
         }
     }
 
-    //获取原神服务器id 官服：cn_gf01天空岛/B服：cn_qd01世界树
+    /**
+     * 获取原神服务器id 官服：cn_gf01天空岛/B服：cn_qd01世界树
+     *
+     * @return String
+     */
     public String getRegion() {
         try {
             JSONObject result = HttpUtils.doGet(MiHoYoConfig.ROLE_URL, getBasicHeaders());
             return (String) result.getJSONObject("data").getJSONArray("list").getJSONObject(0).get("region");
         } catch (NullPointerException e) {
+            log.warn("获取当前原神用户服务器ID失败！");
             return "";
         }
     }
@@ -95,8 +98,7 @@ public class GenShinSignMiHoYo extends MiHoYoAbstractSign {
     public Award getAwardInfo(int day) {
         JSONObject awardResult = HttpUtils.doGet(MiHoYoConfig.AWARD_URL, getHeaders());
         JSONArray jsonArray = awardResult.getJSONObject("data").getJSONArray("awards");
-        List<Award> awards = JSON.parseObject(JSON.toJSONString(jsonArray), new TypeReference<>() {
-        });
+        List<Award> awards = JSON.parseObject(JSON.toJSONString(jsonArray), new TypeReference<>() {});
         return awards.get(day - 1);
     }
 
@@ -122,6 +124,7 @@ public class GenShinSignMiHoYo extends MiHoYoAbstractSign {
             log.info("{}签到获取{}{}", signInfoResult.getJSONObject("data").get("today"), award.getCnt(), award.getName());
             return String.format("%s月已签到%s天\n已获取%s%s", time.getMonth().getValue(), totalSignDay, award.getCnt(), award.getName());
         } catch (Exception e) {
+            log.warn("获取社区奖励查询失败！");
             return "";
         }
     }
