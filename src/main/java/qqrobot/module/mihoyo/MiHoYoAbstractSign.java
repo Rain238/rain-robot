@@ -3,6 +3,8 @@ package qqrobot.module.mihoyo;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.http.Header;
 import org.apache.http.message.BasicHeader;
+import org.springframework.stereotype.Component;
+
 import java.security.SecureRandom;
 import java.util.*;
 
@@ -12,6 +14,7 @@ import java.util.*;
  * &#064;Author  Light rain
  * &#064;Date  2022/5/20 12:08
  */
+@Component
 public abstract class MiHoYoAbstractSign implements Sign {
     //构造器注入
     public final String cookie;
@@ -49,7 +52,13 @@ public abstract class MiHoYoAbstractSign implements Sign {
      */
     @Override
     public Header[] getHeaders() {
-        return new HeaderBuilder.Builder().add("x-rpc-device_id", UUID.randomUUID().toString().replace("-", "").toUpperCase()).add("Content-Type", "application/json;charset=UTF-8").add("x-rpc-client_type", getClientType()).add("x-rpc-app_version", getAppVersion()).add("DS", getDS()).addAll(getBasicHeaders()).build();
+        return new HeaderBuilder.Builder()
+                .add("x-rpc-device_id", UUID.randomUUID().toString().replace("-", "").toUpperCase())
+                .add("Content-Type", "application/json;charset=UTF-8").add("x-rpc-client_type", getClientType())
+                .add("x-rpc-app_version", getAppVersion())
+                .add("DS", getDS())
+                .addAll(getBasicHeaders())
+                .build();
     }
 
     /**
