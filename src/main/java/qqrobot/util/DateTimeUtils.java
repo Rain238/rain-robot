@@ -13,20 +13,13 @@ public class DateTimeUtils {
      * @return String
      */
     public static String convertTimest(Long timestamp, String pattern) {
-
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
-
         return simpleDateFormat.format(new Date(timestamp));
     }
 
     public static void main(String[] args) {
-
         Long timestamp = System.currentTimeMillis();
-
         String pattern = "yyyy-MM-dd HH:mm:ss";
-
         System.out.println(convertTimest(timestamp, pattern));
-
     }
-
 }
