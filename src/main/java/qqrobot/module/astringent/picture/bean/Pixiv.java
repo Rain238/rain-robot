@@ -4,6 +4,10 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Map;
+/**
+ * &#064;Author  RainRain
+ * &#064;Data  2022/5/24 15:38
+ */
 @Getter
 @Setter
 public class Pixiv {
